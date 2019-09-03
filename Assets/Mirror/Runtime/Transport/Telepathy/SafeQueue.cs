@@ -13,7 +13,7 @@ namespace Telepathy
 {
     public class SafeQueue<T>
     {
-        readonly Queue<T> queue = new Queue<T>();
+        Queue<T> queue = new Queue<T>();
 
         // for statistics. don't call Count and assume that it's the same after the
         // call.
@@ -42,7 +42,7 @@ namespace Telepathy
         {
             lock(queue)
             {
-                result = default;
+                result = default(T);
                 if (queue.Count > 0)
                 {
                     result = queue.Dequeue();

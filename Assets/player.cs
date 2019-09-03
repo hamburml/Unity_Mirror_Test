@@ -6,20 +6,25 @@ using Mirror;
 public class player : NetworkBehaviour
 {
 
-    private cube cube;
+    private GameObject cube;
 
-    // Start is called before the first frame update
-    void Start()
+    public override void OnStartServer()
     {
-        cube = FindObjectOfType<cube>();
+        cube = GameObject.Find("Cube");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (isLocalPlayer && Input.GetMouseButton(0))
         {
-            cube.CmdRotate();
+            CmdRotate();
         }
+    }
+
+    [Command]
+    public void CmdRotate()
+    {
+        cube.transform.Rotate(Vector3.up);
     }
 }

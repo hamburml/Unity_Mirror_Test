@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class cube : NetworkBehaviour
+public class Cube : NetworkBehaviour
 {
     // Start is called before the first frame update
     void Start()
@@ -15,11 +15,5 @@ public class cube : NetworkBehaviour
     void Update()
     {
 
-    }
-
-    [Command]
-    public void CmdRotate()
-    {
-        this.transform.Rotate(Vector3.up);
     }
 }

@@ -17,6 +17,10 @@ namespace Mirror
     //    (probably even shorter)
     public static class MessagePacker
     {
+        // PackMessage is in hot path. caching the writer is really worth it to
+        // avoid large amounts of allocations.
+        static NetworkWriter packWriter = new NetworkWriter();
+
         public static int GetId<T>() where T : IMessageBase
         {
             // paul: 16 bits is enough to avoid collisions
@@ -30,44 +34,34 @@ namespace Mirror
         [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use Pack<T> instead")]
         public static byte[] PackMessage(int msgType, MessageBase msg)
         {
-            NetworkWriter writer = NetworkWriterPool.GetWriter();
-            try
-            {
-                // write message type
-                writer.WriteInt16((short)msgType);
+            // reset cached writer length and position
+            packWriter.SetLength(0);
 
-                // serialize message into writer
-                msg.Serialize(writer);
+            // write message type
+            packWriter.Write((short)msgType);
 
-                // return byte[]
-                return writer.ToArray();
-            }
-            finally
-            {
-                NetworkWriterPool.Recycle(writer);
-            }
+            // serialize message into writer
+            msg.Serialize(packWriter);
+
+            // return byte[]
+            return packWriter.ToArray();
         }
 
         // pack message before sending
         public static byte[] Pack<T>(T message) where T : IMessageBase
         {
-            NetworkWriter writer = NetworkWriterPool.GetWriter();
-            try
-            {
-                // write message type
-                int msgType = GetId<T>();
-                writer.WriteUInt16((ushort)msgType);
+            // reset cached writer length and position
+            packWriter.SetLength(0);
 
-                // serialize message into writer
-                message.Serialize(writer);
+            // write message type
+            int msgType = GetId<T>();
+            packWriter.Write((ushort)msgType);
 
-                // return byte[]
-                return writer.ToArray();
-            }
-            finally
-            {
-                NetworkWriterPool.Recycle(writer);
-            }
+            // serialize message into writer
+            message.Serialize(packWriter);
+
+            // return byte[]
+            return packWriter.ToArray();
         }
 
         // unpack a message we received
@@ -95,7 +89,7 @@ namespace Mirror
             // read message type (varint)
             try
             {
-                msgType = messageReader.ReadUInt16();
+                msgType = (int)messageReader.ReadUInt16();
                 return true;
             }
             catch (System.IO.EndOfStreamException)
