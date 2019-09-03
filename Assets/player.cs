@@ -7,6 +7,7 @@ public class player : NetworkBehaviour
 {
 
     private cube cube;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,9 +19,7 @@ public class player : NetworkBehaviour
     {
         if (Input.GetMouseButton(0))
         {
-            
             cube.CmdRotate();
         }
-
     }
 }
